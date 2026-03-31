@@ -6,23 +6,23 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Auth, AuthSchema } from './schema/auth.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { RefreshToken, RefreshTokenSchema } from './schema/refreshToken.schema';
+import { Cache_Module } from '../cache/Cache.Module';
 
 @Module({
-  imports : [
+  imports: [
     DbModule,
     MongooseModule.forFeature([
-      {name : Auth.name, schema : AuthSchema},
-      {name : RefreshToken.name, schema : RefreshTokenSchema}
+      { name: Auth.name, schema: AuthSchema },
+      { name: RefreshToken.name, schema: RefreshTokenSchema },
     ]),
-    JwtModule.register(
-      {
-        global : true,
-        secret : process.env.JWT_SECRET??"",
-        signOptions :{
-          expiresIn : '5m'
-        }
-      }
-    )
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET ?? '',
+      signOptions: {
+        expiresIn: '5m',
+      },
+    }),
+    Cache_Module
   ],
   controllers: [AuthController],
   providers: [AuthService],

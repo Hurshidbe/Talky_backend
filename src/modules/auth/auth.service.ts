@@ -8,13 +8,16 @@ import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt';
 import {v4 as  uuid} from 'uuid'
 import { RefreshToken } from './schema/refreshToken.schema';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class AuthService {
     constructor(
         @InjectModel(Auth.name) private readonly AuthRepo : Model<Auth>,
         @InjectModel(RefreshToken.name) private readonly RefreshTokenRepo : Model<RefreshToken>,
-        private readonly jwt : JwtService
+        @Inject(CACHE_MANAGER) private readonly CacheManager:Cache,
+        private readonly jwt : JwtService,
     ){}
 
     async register(dto : RegisterDto){
@@ -33,12 +36,24 @@ export class AuthService {
         }
     }
 
-    async login(dto : LoginDto){
-        const user = await this.AuthRepo.findOne({email : dto.email})
-        if(!user) throw new UnauthorizedException('incorrect email/password')
-            const pass_match = await bcrypt.compare(dto.password,user.password)
-        if(!pass_match) throw new UnauthorizedException('incorrect email/password')
-            return await this.generateTokens(user._id)
+    async login(dto: LoginDto) {
+        const key = `login_attemps:${dto.email}`;
+        const attemps = (await this.CacheManager.get<number>(key)) ?? 0;
+
+        if (attemps >= 5) {
+            throw new UnauthorizedException('Too many attemps, try again after 2 minutes');
+        }
+
+        const user = await this.AuthRepo.findOne({ email: dto.email });
+        const pass_match = user ? await bcrypt.compare(dto.password, user.password) : false;
+
+        if (!user || !pass_match) {
+            await this.CacheManager.set(key, attemps + 1, 120000);
+            throw new UnauthorizedException('Incorrect email/password');
+        }
+
+        await this.CacheManager.del(key);
+        return await this.generateTokens(user._id);
     }
 
     async generateTokens(userId : Types.ObjectId){
