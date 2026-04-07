@@ -1,9 +1,10 @@
-import { Body, Controller, Get, HttpException, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Logger, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
+import { refreshTwoTokents, RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { AuthGuard } from 'src/guards/Auth.guard';
+import { AuthGuard } from '@nestjs/passport'
 import type { Request } from 'express';
+import { Profile } from 'passport';
 
 @Controller('auth')
 export class AuthController {
@@ -12,7 +13,7 @@ export class AuthController {
   @Post('register')
   async register(@Body()dto : RegisterDto){
    try {
-     return await this.authService.register(dto)
+     return this.authService.register(dto)
    } catch (error) {
     throw new HttpException(error.message , error.status??500)
    }
@@ -23,15 +24,35 @@ export class AuthController {
     @Body() dto : LoginDto,
   ){
     try {
-      return await this.authService.login(dto)
+      return this.authService.login(dto)
     } catch (error) {
       throw new HttpException(error.message , error.status??500)
     }
   }
 
-  @UseGuards(AuthGuard)
-  @Get('test')
-  async test(){
-    return 'hi'
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleLogin(){}
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async callback(@Req() req : Request){
+    try {
+    const data = req.user as Profile
+    return this.authService.registerOrLoginWithGoogle(data)
+    } catch (error) {
+      Logger.error(error)
+      throw new HttpException(error.message , error.status??500)
+    }
+  }
+
+    
+  @Post('refresh')                                  // accessToken eskibqosa shunga call qilishadda
+  async refreshTwoTokents(@Body() dto : refreshTwoTokents){
+    try {
+      return this.authService.refreshAll(dto.refresh_token)
+    } catch (error) {
+      throw new HttpException(error.message , error.status??500)
+    }
   }
 }

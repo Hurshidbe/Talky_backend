@@ -5,7 +5,7 @@ export class RegisterDto {
     @IsString()
     @Length(5,100)
     @IsEmail()
-    email : string
+    email!: string
 
     @MaxLength(50)
     @IsStrongPassword({
@@ -13,7 +13,7 @@ export class RegisterDto {
         minNumbers : 1,
         minUppercase : 1,
     })
-    password : string
+    password!: string
 
     @MaxLength(50)
     @IsStrongPassword({
@@ -21,5 +21,12 @@ export class RegisterDto {
         minNumbers : 1,
         minUppercase : 1,
     })
-    return_password : string
+    return_password!: string
+}
+
+
+export class refreshTwoTokents{
+    @IsNotEmpty()
+    @IsString()
+    refresh_token! : string
 }

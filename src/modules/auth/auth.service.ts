@@ -10,6 +10,8 @@ import {v4 as  uuid} from 'uuid'
 import { RefreshToken } from './schema/refreshToken.schema';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { Profile, use } from 'passport';
+import { empty } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +29,8 @@ export class AuthService {
             const user = await this.AuthRepo.create(
                 {
                     email : dto.email,
-                    password : hashed_pass
+                    password : hashed_pass,
+                    firstname : dto.email.split('@')[0]
                 }
             )
         return {
@@ -35,6 +38,40 @@ export class AuthService {
             created : user
         }
     }
+
+    async registerOrLoginWithGoogle(data: Profile) {
+        const user = {
+            google_id: data.id,
+            email: data.emails?.[0]?.value,
+            name: data.name?.givenName,
+            avatar: data.photos?.[0]?.value
+        };
+        
+        let isRegistered = await this.AuthRepo.findOne({ email: user.email });
+        if (!isRegistered) {
+            const newUser = await this.AuthRepo.create({
+                google_id: user.google_id,
+                email: user.email,
+                firstname: user.name,
+                avatar: user.avatar,
+                is_email_verified: true,
+                password: null
+            });
+            
+            return this.generateTokens(newUser._id);
+        } else {
+            if (!isRegistered.google_id ||!isRegistered.is_email_verified) {
+                isRegistered = await this.AuthRepo.findByIdAndUpdate(
+                    isRegistered._id,
+                    { $set: { google_id: user.google_id, is_email_verified: true } },
+                    { new: true }
+                )
+            }
+            if (!isRegistered) throw new UnauthorizedException('User not found');
+        }
+
+  return this.generateTokens(isRegistered._id);
+}
 
     async login(dto: LoginDto) {
         const key = `login_attemps:${dto.email}`;
@@ -45,7 +82,7 @@ export class AuthService {
         }
 
         const user = await this.AuthRepo.findOne({ email: dto.email });
-        const pass_match = user ? await bcrypt.compare(dto.password, user.password) : false;
+        const pass_match = user? await bcrypt.compare(dto.password, user.password as string) : false;
 
         if (!user || !pass_match) {
             await this.CacheManager.set(key, attemps + 1, 120000);
