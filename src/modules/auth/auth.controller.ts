@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, Logger, Post, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpException, Logger, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { refreshTwoTokents, RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -13,7 +13,7 @@ export class AuthController {
   @Post('register')
   async register(@Body()dto : RegisterDto){
    try {
-     return this.authService.register(dto)
+     return await this.authService.register(dto)
    } catch (error) {
     throw new HttpException(error.message , error.status??500)
    }
@@ -24,7 +24,7 @@ export class AuthController {
     @Body() dto : LoginDto,
   ){
     try {
-      return this.authService.login(dto)
+      return await this.authService.loginWithEmail(dto)
     } catch (error) {
       throw new HttpException(error.message , error.status??500)
     }
@@ -39,18 +39,27 @@ export class AuthController {
   async callback(@Req() req : Request){
     try {
     const data = req.user as Profile
-    return this.authService.registerOrLoginWithGoogle(data)
+    return await this.authService.registerOrLoginWithGoogle(data)
     } catch (error) {
-      Logger.error(error)
       throw new HttpException(error.message , error.status??500)
     }
   }
 
-    
+  @Get('verify/:id')  
+  async verifyEmail(
+    @Param('id') id : string
+  ){
+    try {
+      return await this.authService.verifyEmail(id)
+    } catch (error) {
+      throw new HttpException(error.message , error.status??500)
+    }
+  }
+
   @Post('refresh')                                  // accessToken eskibqosa shunga call qilishadda
   async refreshTwoTokents(@Body() dto : refreshTwoTokents){
     try {
-      return this.authService.refreshAll(dto.refresh_token)
+      return await this.authService.refreshAll(dto.refresh_token)
     } catch (error) {
       throw new HttpException(error.message , error.status??500)
     }

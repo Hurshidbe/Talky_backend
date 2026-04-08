@@ -9,6 +9,8 @@ import { RefreshToken, RefreshTokenSchema } from './schema/refreshToken.schema';
 import { Cache_Module } from '../cache/Cache.Module';
 import { ConfigModule } from '@nestjs/config';
 import { GoogleOauth2Module } from '../google-oauth2/google-oauth2.module';
+import { MailService } from '../nodeMailer/mailer.service';
+import { MailModule } from '../nodeMailer/mailer.module';
 
 @Module({
   imports: [
@@ -26,8 +28,9 @@ import { GoogleOauth2Module } from '../google-oauth2/google-oauth2.module';
       },
     }),
     Cache_Module,
+    MailModule
   ],
   controllers: [AuthController],
-  providers: [AuthService ],
+  providers: [AuthService, MailService ],
 })
 export class AuthModule {}
