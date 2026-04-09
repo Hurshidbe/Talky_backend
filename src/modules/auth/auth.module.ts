@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { GoogleOauth2Module } from '../google-oauth2/google-oauth2.module';
 import { MailService } from '../nodeMailer/mailer.service';
 import { MailModule } from '../nodeMailer/mailer.module';
+import { ResetPass, ResetPassSchema } from './schema/resetPass.schema';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { MailModule } from '../nodeMailer/mailer.module';
     MongooseModule.forFeature([
       { name: Auth.name, schema: AuthSchema },
       { name: RefreshToken.name, schema: RefreshTokenSchema },
+      { name: ResetPass.name, schema: ResetPassSchema },
     ]),
     JwtModule.register({
       global: true,

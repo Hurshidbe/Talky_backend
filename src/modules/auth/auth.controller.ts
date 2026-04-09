@@ -2,9 +2,11 @@ import { BadRequestException, Body, Controller, Get, HttpException, Logger, Para
 import { AuthService } from './auth.service';
 import { refreshTwoTokents, RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { AuthGuard } from '@nestjs/passport'
+import { AuthGuard as PassportAuthGuard } from '@nestjs/passport';
 import type { Request } from 'express';
 import { Profile } from 'passport';
+import { ChangePasswordDto, SetPasswordDto } from './dto/setAndChangePassword.dto';
+import { AuthGuard } from 'src/guards/Auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -31,11 +33,11 @@ export class AuthController {
   }
 
   @Get('google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(PassportAuthGuard('google'))
   async googleLogin(){}
 
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(PassportAuthGuard('google'))
   async callback(@Req() req : Request){
     try {
     const data = req.user as Profile
@@ -56,7 +58,59 @@ export class AuthController {
     }
   }
 
-  @Post('refresh')                                  // accessToken eskibqosa shunga call qilishadda
+  @UseGuards(AuthGuard)
+  @Post('set-password')
+  async setPasswordForGoogleUser(
+    @Req() req : any,
+    @Body() dto : SetPasswordDto
+  ){
+    try {
+      const userId  = req.user.userId
+      console.log(userId)
+      return await this.authService.setPassword(userId,dto)
+    } catch (error) {
+      throw new HttpException(error.message , error.status??500)
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('change-password')  
+  async changePasswod(
+    @Req() req : any,
+    @Body() dto : ChangePasswordDto
+  ){
+    try {
+      const userId  = req.user.userId
+      console.log(userId)
+      return await this.authService.changePassword(userId,dto)
+    } catch (error) {
+      throw new HttpException(error.message , error.status??500)
+    }
+  }
+
+  @Post('password-reset-request')
+  async resetPasswordrequest(@Body() data:{email : string}){
+    try {
+      return await this.authService.sendResetPassLinkToViaNodemailer(data.email)
+    } catch (error) {
+      throw new HttpException(error.message , error.status??500)
+    }
+  }
+
+  @Post('reset-password/:id')
+  async resetPassword(
+    @Param('id') id : string,
+    @Body() dto : SetPasswordDto
+  ){
+    try {
+      return await this.authService.resetPassword(id, dto)
+    } catch (error) {
+      throw new HttpException(error.message , error.status??500)
+    }
+  }
+
+
+  @Post('refresh')                                  // accessToken eskibqosa shunga call qilishad
   async refreshTwoTokents(@Body() dto : refreshTwoTokents){
     try {
       return await this.authService.refreshAll(dto.refresh_token)

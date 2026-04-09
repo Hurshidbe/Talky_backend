@@ -1,5 +1,5 @@
 import { MailerService } from "@nestjs-modules/mailer";
-import { BadRequestException, Injectable, Type } from "@nestjs/common";
+import { BadRequestException, HttpException, Injectable, Type } from "@nestjs/common";
 import { Types } from "mongoose";
 import { Auth } from "../auth/schema/auth.schema";
 import { ConfigService } from "@nestjs/config";
@@ -47,5 +47,19 @@ export class MailService {
         } catch (error) {
             throw new BadRequestException(`email jo'natishda hatolik : ${error}`)
         }
+    }
+
+    async sendResetPasswordLink(Id : Types.ObjectId, email : string){
+      try {
+        const text =`Passwordingizni yangilash uchun follow this link : http://localhost:3000/auth/reset-password/${Id}`
+        return await this.mailerService.sendMail({
+          to : email,
+                from : this.configService.get('MAIL')??'',
+                subject : 'Reset-password',
+                text,
+        })
+      } catch (error) {
+        throw new BadRequestException(`email jo'natishda hatolik : ${error}`)
+      }
     }
 }

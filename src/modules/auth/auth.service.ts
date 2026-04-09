@@ -10,18 +10,25 @@ import {v4 as  uuid} from 'uuid'
 import { RefreshToken } from './schema/refreshToken.schema';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import { Profile } from 'passport';
+import { Profile, use } from 'passport';
 import { MailService } from '../nodeMailer/mailer.service';
 import { types } from 'util';
+import { identity, throwError } from 'rxjs';
+import { ChangePasswordDto,  SetPasswordDto } from './dto/setAndChangePassword.dto';
+import { ConfigService } from '@nestjs/config';
+import { ResetPass } from './schema/resetPass.schema';
+import { Mode } from 'fs';
 
 @Injectable()
 export class AuthService {
     constructor(
         @InjectModel(Auth.name) private readonly AuthRepo : Model<Auth>,
         @InjectModel(RefreshToken.name) private readonly RefreshTokenRepo : Model<RefreshToken>,
+        @InjectModel(ResetPass.name) private readonly ResetPassRequestsRepo : Model<ResetPass>,
         @Inject(CACHE_MANAGER) private readonly CacheManager:Cache,
         private readonly jwt : JwtService,
-        private readonly mailService : MailService
+        private readonly mailService : MailService,
+        private readonly configService : ConfigService
     ){}
 
     async register(dto : RegisterDto){
@@ -85,7 +92,7 @@ export class AuthService {
         const pass_match = user? await bcrypt.compare(dto.password, user.password as string) : false;
         if (!user || !pass_match) {
             await this.CacheManager.set(key, attemps + 1, 120000);
-            throw new UnauthorizedException('Incorrect email/password');
+            throw new UnauthorizedException(`Incorrect email/password \n if you want reset your password, pls click this link : http://localhost:3000/auth/password-reset-request`);
         }
 
         if(!user.is_email_verified){
@@ -96,8 +103,57 @@ export class AuthService {
         return await this.generateTokens(user._id);
     }
 
+    async sendResetPassLinkToViaNodemailer(email : string){
+        const user = await this.AuthRepo.findOne({email : email})
+        if(!user) return `bunday email saytda royhatdan o'tmagan ro'yhatdan o'tish : http://localhost:3000/auth/register`
+        await this.ResetPassRequestsRepo.create({user : user._id, used : false})
+        return await this.mailService.sendResetPasswordLink(user._id, user.email)
+    }
+
+
+    async setPassword(userId : string, dto : SetPasswordDto){
+        if(dto.password !== dto.return_password) throw new BadRequestException('passwords not same')
+        const user = await this.AuthRepo.findById(userId)
+        if(!user) throw new BadRequestException('user not found')
+        if(user.google_id){
+            await this.AuthRepo.findByIdAndUpdate(userId, {password : await bcrypt.hash(dto.password,12)})
+            return 'password successfully created'
+        } else {
+            throw new UnauthorizedException('This operation is only for Google-logged users who have not set a password')
+        }
+    }
+
+    async resetPassword(userId : string, dto : SetPasswordDto){
+        const resetRequest = await this.ResetPassRequestsRepo.findOne({ user: userId }).sort({ createdAt: -1 });
+        if (!resetRequest) {throw new BadRequestException('Reset request not found')}
+        const isExpired = resetRequest.expire.getTime() < Date.now();
+        if (resetRequest.used || isExpired) {
+            throw new BadRequestException('Link expired or already used')
+        }
+        if(dto.password!==dto.return_password) throw new UnauthorizedException('passwords do nor match')
+        await this.AuthRepo.findByIdAndUpdate(userId, {password : bcrypt.hash(dto.password, 12)}, {new : true})
+    return "success"
+    }
+
+    async changePassword(userId: string, dto: ChangePasswordDto) {
+    if (dto.password !== dto.return_password)
+        throw new BadRequestException('Passwords do not match')
+    const user= await this.AuthRepo.findById(userId);
+    if (!user) throw new BadRequestException('User not found')
+    if(!user.password) throw new BadRequestException('This operation is only for users who have set a password')
+    const isMatch = await bcrypt.compare(dto.old_password, user.password!)
+    if (!isMatch) throw new BadRequestException('Old password is incorrect')
+
+    const hashedPassword = await bcrypt.hash(dto.password, 12)
+    await this.AuthRepo.findByIdAndUpdate(userId, { password: hashedPassword })
+    return 'Password changed successfully'
+}
+
     async verifyEmail(id : string){
-        await this.AuthRepo.findByIdAndUpdate(id, {is_email_verified : true}, {new : true}) /////  add some security parts
+        const user = await this.AuthRepo.findById(id)
+        if(!user) throw new BadRequestException('user not found')
+        if(user.is_email_verified) return 'email already verified'
+        await this.AuthRepo.findByIdAndUpdate(id, {is_email_verified : true}, {new : true})
         return 'your email successfully verified, please relogin and enjoy'
     }
 
