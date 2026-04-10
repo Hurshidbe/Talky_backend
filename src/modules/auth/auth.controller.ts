@@ -58,7 +58,7 @@ export class AuthController {
     }
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)                                    // Google-registered user can set own passowrd for login from other devices also without google account too
   @Post('set-password')
   async setPasswordForGoogleUser(
     @Req() req : any,
@@ -97,7 +97,7 @@ export class AuthController {
     }
   }
 
-  @Post('reset-password/:id')
+  @Post('reset-password/:id')                        //reset password by id. when user forgot password recive email message for linking with this url (url is odnorazoviy)
   async resetPassword(
     @Param('id') id : string,
     @Body() dto : SetPasswordDto

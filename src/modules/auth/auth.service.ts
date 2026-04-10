@@ -106,6 +106,7 @@ export class AuthService {
     async sendResetPassLinkToViaNodemailer(email : string){
         const user = await this.AuthRepo.findOne({email : email})
         if(!user) return `bunday email saytda royhatdan o'tmagan ro'yhatdan o'tish : http://localhost:3000/auth/register`
+        await this.ResetPassRequestsRepo.findByIdAndDelete(user._id)
         await this.ResetPassRequestsRepo.create({user : user._id, used : false})
         return await this.mailService.sendResetPasswordLink(user._id, user.email)
     }
@@ -124,15 +125,13 @@ export class AuthService {
     }
 
     async resetPassword(userId : string, dto : SetPasswordDto){
-        const resetRequest = await this.ResetPassRequestsRepo.findOne({ user: userId }).sort({ createdAt: -1 });
-        if (!resetRequest) {throw new BadRequestException('Reset request not found')}
-        const isExpired = resetRequest.expire.getTime() < Date.now();
-        if (resetRequest.used || isExpired) {
-            throw new BadRequestException('Link expired or already used')
-        }
-        if(dto.password!==dto.return_password) throw new UnauthorizedException('passwords do nor match')
-        await this.AuthRepo.findByIdAndUpdate(userId, {password : bcrypt.hash(dto.password, 12)}, {new : true})
-    return "success"
+        if(dto.password!==dto.return_password) throw new UnauthorizedException('passwords do not match')
+        const resetRequest = await this.ResetPassRequestsRepo.findOne({user:new Types.ObjectId(userId), used : false, expire : {$gte: new Date()}});
+        if (!resetRequest) {throw new BadRequestException('link invalid or expired')}
+        await this.AuthRepo.findByIdAndUpdate(userId, {password : await bcrypt.hash(dto.password, 12)})
+        resetRequest.used=true
+        await resetRequest.save()
+        return 'password successfully changed, Now you can relogin'
     }
 
     async changePassword(userId: string, dto: ChangePasswordDto) {
