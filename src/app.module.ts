@@ -9,6 +9,8 @@ import { GoogleOauth2Module } from './modules/google-oauth2/google-oauth2.module
 import { MailModule } from './modules/nodeMailer/mailer.module';
 import { ConfigModule } from '@nestjs/config';
 import { env } from 'process';
+import { ProjectsModule } from './modules/projects/projects.module';
+import { ProfileModule } from './modules/profile/profile.module';
 
 @Module({
   imports: [
@@ -21,7 +23,9 @@ import { env } from 'process';
     DbModule, 
     Cache_Module, 
     GoogleOauth2Module,
-    MailModule
+    MailModule,
+    ProjectsModule,
+    ProfileModule
     ],
   controllers: [AppController],
   providers: [AppService],

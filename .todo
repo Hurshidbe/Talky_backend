@@ -1,0 +1,41 @@
+{
+  "todotree": {
+    "tree": [
+      {
+        "key": 1775901453932,
+        "children": [],
+        "todo": {
+          "content": "add cloudinay/AWS-bucked based function for saving user avatars",
+          "id": 1775901453932,
+          "level": "secondary",
+          "done": false,
+          "start": 1775901453932
+        }
+      },
+      {
+        "key": 1775901505827,
+        "children": [],
+        "todo": {
+          "content": "profile-logics",
+          "id": 1775901505827,
+          "level": "default",
+          "done": false,
+          "start": 1775901505827
+        }
+      }
+    ],
+    "expandKeys": [],
+    "schema": "https://github.com/Saber2pr/vsc-ext-todolist/blob/master/src/api/type.ts#L3",
+    "add_mode": "bottom",
+    "virtual": false,
+    "timelines": [],
+    "showLine": false,
+    "playFontSize": 24,
+    "title": ".todo",
+    "autoSort": false,
+    "showEndTime": false,
+    "simpleMode": false,
+    "lang": "en",
+    "version": "1775901512634"
+  }
+}

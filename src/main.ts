@@ -11,6 +11,6 @@ async function bootstrap() {
       transform: true
     }))
   await app.listen(process.env.PORT ?? 3000);
-  console.log(`server is running on ${process.env.PORT}-port`)
+  console.log(`Nigga is working on ${process.env.PORT}-port`)
 }
 bootstrap();

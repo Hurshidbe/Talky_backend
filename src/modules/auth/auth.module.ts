@@ -12,6 +12,8 @@ import { GoogleOauth2Module } from '../google-oauth2/google-oauth2.module';
 import { MailService } from '../nodeMailer/mailer.service';
 import { MailModule } from '../nodeMailer/mailer.module';
 import { ResetPass, ResetPassSchema } from './schema/resetPass.schema';
+import { profile } from 'console';
+import { ProfileService } from '../profile/profile.service';
 
 @Module({
   imports: [
@@ -33,6 +35,6 @@ import { ResetPass, ResetPassSchema } from './schema/resetPass.schema';
     MailModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, MailService ],
+  providers: [AuthService, MailService, ProfileService ],
 })
 export class AuthModule {}
