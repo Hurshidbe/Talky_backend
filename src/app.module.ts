@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { env } from 'process';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { ProfileModule } from './modules/profile/profile.module';
+import { CardsModule } from './modules/cards/cards.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { ProfileModule } from './modules/profile/profile.module';
     GoogleOauth2Module,
     MailModule,
     ProjectsModule,
-    ProfileModule
+    ProfileModule,
+    CardsModule
     ],
   controllers: [AppController],
   providers: [AppService],

@@ -7,7 +7,7 @@
         "todo": {
           "content": "add cloudinay/AWS-bucked based function for saving user avatars",
           "id": 1775901453932,
-          "level": "secondary",
+          "level": "default",
           "done": false,
           "start": 1775901453932
         }
@@ -18,9 +18,42 @@
         "todo": {
           "content": "profile-logics",
           "id": 1775901505827,
-          "level": "default",
+          "level": "secondary",
           "done": false,
           "start": 1775901505827
+        }
+      },
+      {
+        "key": 1776415686517,
+        "children": [],
+        "todo": {
+          "content": "atrabotka 2x",
+          "id": 1776415686517,
+          "level": "warning",
+          "done": false,
+          "start": 1776415686518
+        }
+      },
+      {
+        "key": 1776415704549,
+        "children": [],
+        "todo": {
+          "content": "buy new server for portfolio from AWS",
+          "id": 1776415704549,
+          "level": "warning",
+          "done": false,
+          "start": 1776415704549
+        }
+      },
+      {
+        "key": 1776415744301,
+        "children": [],
+        "todo": {
+          "content": "download and ready 'mustaqil ishlar(GeoAxborot-texnologiyalari)' for print out",
+          "id": 1776415744301,
+          "level": "danger",
+          "done": false,
+          "start": 1776415744301
         }
       }
     ],
@@ -36,6 +69,6 @@
     "showEndTime": false,
     "simpleMode": false,
     "lang": "en",
-    "version": "1775901512634"
+    "version": "1776415850441"
   }
 }
