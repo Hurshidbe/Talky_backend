@@ -38,6 +38,7 @@
     "cache-manager": "^7.2.8",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "cloudinary": "^2.10.0",
     "dotenv": "^17.3.1",
     "mongoose": "^9.3.3",
     "nodemailer": "^8.0.5",
@@ -46,6 +47,7 @@
     "redis": "^5.11.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "stream": "^0.0.3",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
@@ -54,8 +56,9 @@
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
-    "@types/express": "^5.0.0",
+    "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
+    "@types/multer": "^2.1.0",
     "@types/node": "^22.10.7",
     "@types/passport-google-oauth20": "^2.0.17",
     "@types/supertest": "^6.0.2",

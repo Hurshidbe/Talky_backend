@@ -12,6 +12,7 @@ import { env } from 'process';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { CardsModule } from './modules/cards/cards.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { CardsModule } from './modules/cards/cards.module';
     MailModule,
     ProjectsModule,
     ProfileModule,
-    CardsModule
+    CardsModule,
+    CloudinaryModule
     ],
   controllers: [AppController],
   providers: [AppService],
