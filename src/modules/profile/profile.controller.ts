@@ -45,7 +45,7 @@ export class ProfileController {
     try {
       const userId = req.user.userId
       const img_url = await this.cloudinaryService.uploadOneImage(file)
-      if(!userId || !img_url) throw new BadRequestException('error occured with avatar updating')
+      if(!userId) throw new BadRequestException('error occured with avatar updating')
       return await this.profileService.updateAvatar(userId, <string>img_url)
     } catch (error) {
       throw new HttpException(error.message ,error.status??500)

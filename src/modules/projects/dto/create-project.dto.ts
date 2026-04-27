@@ -10,6 +10,4 @@ export class CreateProjectDto {
     @IsString()
     @Length(0,5000)
     description? :string
-
-    
 }
