@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
+import { IsArray, IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
 
 export class CreateProjectDto {
     @IsNotEmpty()
@@ -10,4 +10,9 @@ export class CreateProjectDto {
     @IsString()
     @Length(0,5000)
     description? :string
+
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    collobrators?: string[];
 }

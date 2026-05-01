@@ -66,7 +66,7 @@ export class AuthController {
   ){
     try {
       const userId  = req.user.userId
-      console.log(userId)
+
       return await this.authService.setPassword(userId,dto)
     } catch (error) {
       throw new HttpException(error.message , error.status??500)
@@ -81,7 +81,7 @@ export class AuthController {
   ){
     try {
       const userId  = req.user.userId
-      console.log(userId)
+
       return await this.authService.changePassword(userId,dto)
     } catch (error) {
       throw new HttpException(error.message , error.status??500)

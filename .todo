@@ -8,8 +8,10 @@
           "content": "add cloudinay/AWS-bucked based function for saving user avatars",
           "id": 1775901453932,
           "level": "default",
-          "done": false,
-          "start": 1775901453932
+          "done": true,
+          "start": 1775901453932,
+          "focus": false,
+          "end": 1777658064962
         }
       },
       {
@@ -19,8 +21,10 @@
           "content": "profile-logics",
           "id": 1775901505827,
           "level": "secondary",
-          "done": false,
-          "start": 1775901505827
+          "done": true,
+          "start": 1775901505827,
+          "focus": false,
+          "end": 1777658060802
         }
       },
       {
@@ -30,8 +34,10 @@
           "content": "atrabotka 2x",
           "id": 1776415686517,
           "level": "warning",
-          "done": false,
-          "start": 1776415686518
+          "done": true,
+          "start": 1776415686518,
+          "focus": false,
+          "end": 1777658069442
         }
       },
       {
@@ -41,8 +47,10 @@
           "content": "buy new server for portfolio from AWS",
           "id": 1776415704549,
           "level": "warning",
-          "done": false,
-          "start": 1776415704549
+          "done": true,
+          "start": 1776415704549,
+          "focus": false,
+          "end": 1777658050970
         }
       },
       {
@@ -52,8 +60,10 @@
           "content": "download and ready 'mustaqil ishlar(GeoAxborot-texnologiyalari)' for print out",
           "id": 1776415744301,
           "level": "danger",
-          "done": false,
-          "start": 1776415744301
+          "done": true,
+          "start": 1776415744301,
+          "focus": false,
+          "end": 1777658055730
         }
       }
     ],
@@ -69,6 +79,6 @@
     "showEndTime": false,
     "simpleMode": false,
     "lang": "en",
-    "version": "1776415850441"
+    "version": "1777658069465"
   }
 }

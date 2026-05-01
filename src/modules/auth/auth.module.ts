@@ -28,13 +28,13 @@ import { ProfileService } from '../profile/profile.service';
       global: true,
       secret: process.env.JWT_SECRET ?? '',
       signOptions: {
-        expiresIn: '5m',
+        expiresIn: '5h',
       },
     }),
     Cache_Module,
     MailModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, MailService, ProfileService ],
+  providers: [AuthService, MailService, ProfileService],
 })
-export class AuthModule {}
+export class AuthModule { }

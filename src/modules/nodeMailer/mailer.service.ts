@@ -6,21 +6,20 @@ import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class MailService {
-    constructor(
-        private readonly mailerService : MailerService,
-        private readonly configService : ConfigService,
-    ){}
+  constructor(
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
+  ) { }
 
-    async sendActivateEmail(user_id : Types.ObjectId, email : string){
-        try {
-            const verificationLink = `${this.configService.get('EMAIL_VERIFY_LINK')}/${user_id}`
-            console.log(verificationLink)
-            return await this.mailerService.sendMail({
-                to : email,
-                from : this.configService.get('MAIL')??'',
-                subject : 'Email verification',
-                text : 'click this button to verify your email on TASKY',
-                html : `
+  async sendActivateEmail(user_id: Types.ObjectId, email: string) {
+    try {
+      const verificationLink = `${this.configService.get('EMAIL_VERIFY_LINK')}/${user_id}`
+      return await this.mailerService.sendMail({
+        to: email,
+        from: this.configService.get('MAIL') ?? '',
+        subject: 'Email verification',
+        text: 'click this button to verify your email on TASKY',
+        html: `
       <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
         <h2 style="color: #333;">Verify Your Email</h2>
         <p style="color: #555;">Click the button below to verify your email address on <strong>TASKY</strong>.</p>
@@ -43,23 +42,55 @@ export class MailService {
         </p>
       </div>
     `
-            })
-        } catch (error) {
-            throw new BadRequestException(`email jo'natishda hatolik : ${error}`)
-        }
+      })
+    } catch (error) {
+      throw new BadRequestException(`email jo'natishda hatolik : ${error}`)
     }
+  }
 
-    async sendResetPasswordLink(Id : Types.ObjectId, email : string){
-      try {
-        const text =`Passwordingizni yangilash uchun follow this link : http://localhost:3000/auth/reset-password/${Id}`
-        return await this.mailerService.sendMail({
-          to : email,
-                from : this.configService.get('MAIL')??'',
-                subject : 'Reset-password',
-                text,
-        })
-      } catch (error) {
-        throw new BadRequestException(`email jo'natishda hatolik : ${error}`)
-      }
+  async sendResetPasswordLink(Id: Types.ObjectId, email: string) {
+    try {
+      const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+      const text = `Passwordingizni yangilash uchun follow this link : ${frontendUrl}/auth/reset-password/${Id}`
+      return await this.mailerService.sendMail({
+        to: email,
+        from: this.configService.get('MAIL') ?? '',
+        subject: 'Reset-password',
+        text,
+      })
+    } catch (error) {
+      throw new BadRequestException(`email jo'natishda hatolik : ${error}`)
     }
+  }
+
+  async sendCollaboratorInvite(email: string, projectName: string, inviterName: string, inviteLink: string, customMessage?: string) {
+    try {
+
+      
+      const result = await this.mailerService.sendMail({
+        to: email,
+        from: this.configService.get('MAIL') ?? '',
+        subject: `Invitation to collaborate on ${projectName}`,
+        text: `${inviterName} has invited you to collaborate on ${projectName}. Click here to join: ${inviteLink}`,
+        html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                  <h2>You have been invited!</h2>
+                  <p><strong>${inviterName}</strong> has invited you to join the project <strong>${projectName}</strong> on TASKY.</p>
+                  ${customMessage ? `<p style="padding: 10px; background: #f4f4f4; border-left: 4px solid #007bff;">"${customMessage}"</p>` : ''}
+                  <div style="margin: 20px 0;">
+                    <a href="${inviteLink}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Accept Invitation</a>
+                  </div>
+                  <p style="font-size: 12px; color: #777;">
+                    If the button doesn't work, copy and paste this link: <br>
+                    ${inviteLink}
+                  </p>
+                </div>
+              `
+      });
+      
+      return result;
+    } catch (error) {
+      throw new BadRequestException(`Failed to send invitation email: ${error.message}`);
+    }
+  }
 }
