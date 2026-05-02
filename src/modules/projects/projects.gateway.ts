@@ -140,6 +140,7 @@ export class ProjectsGateway implements OnGatewayConnection, OnGatewayDisconnect
     }
   }
 
+  @UsePipes(new ValidationPipe())
   @SubscribeMessage('inviteCollaborator')
   async handleInviteCollaborator(
     @ConnectedSocket() client: Socket,
@@ -153,13 +154,32 @@ export class ProjectsGateway implements OnGatewayConnection, OnGatewayDisconnect
       const result = await this.projectService.inviteCollaborator(
         userId,
         payload.projectId,
-        payload.emailOrUsername.toLocaleLowerCase(),
+        payload.emailOrUsername,
         payload.message
       );
 
-      return result; // { success: true, message: ... }
+      return result;
     } catch (error) {
       return { success: false, event: 'inviteCollaborator', error: error.message };
+    }
+  }
+
+  @SubscribeMessage('removeCollaborator')
+  async handleRemoveCollaborator(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { projectId: string, collaboratorId: string }
+  ) {
+    try {
+      await this.projectService.tokenChecker(client);
+      const ownerId = client.data.user.userId;
+      const result = await this.projectService.removeCollaborator(ownerId, data.projectId, data.collaboratorId);
+
+      // Hamkorni ogohlantiramiz
+      this.server.to(`user_${data.collaboratorId}`).emit('removedFromProject', { projectId: data.projectId });
+
+      return result;
+    } catch (error) {
+      return { success: false, event: 'removeCollaborator', error: error.message };
     }
   }
 }

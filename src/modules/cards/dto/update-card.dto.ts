@@ -1,6 +1,10 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateCardDto } from './create-card.dto';
+import { IsNotEmpty, IsString, Matches } from 'class-validator';
 
 export class UpdateCardDto extends PartialType(CreateCardDto) {
-  id: number;
+    @IsNotEmpty()
+    @IsString()
+    @Matches(/^[0-9a-fA-F]{24}$/, { message: 'Invalid card ID format' })
+    id!: string;
 }

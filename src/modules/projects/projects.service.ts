@@ -4,7 +4,9 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Project } from './entities/project.entity';
 import { Auth } from '../auth/schema/auth.schema';
-import { Model } from 'mongoose';
+import { Card } from '../cards/entities/card.entity';
+import { Task } from '../cards/entities/task.entity';
+import { Model, Types } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { Socket } from 'socket.io';
 import { MailService } from '../nodeMailer/mailer.service';
@@ -14,6 +16,8 @@ export class ProjectsService {
   constructor(
     @InjectModel(Project.name) private readonly ProjectsRepo: Model<Project>,
     @InjectModel(Auth.name) private readonly AuthRepo: Model<Auth>,
+    @InjectModel(Card.name) private readonly CardRepo: Model<Card>,
+    @InjectModel(Task.name) private readonly TaskRepo: Model<Task>,
     private readonly jwt: JwtService,
     private readonly mailService: MailService
   ) { }
@@ -75,6 +79,10 @@ export class ProjectsService {
       throw new ForbiddenException('Only the owner can delete the project');
     }
 
+    // Cascade delete: Cards and Tasks
+    await this.CardRepo.deleteMany({ projectId: new Types.ObjectId(id) }).exec();
+    await this.TaskRepo.deleteMany({ projectId: new Types.ObjectId(id) }).exec();
+
     const deleted = await this.ProjectsRepo.findByIdAndDelete(id).exec();
     if (!deleted) throw new NotFoundException('Failed to delete project');
     return deleted;
@@ -90,7 +98,10 @@ export class ProjectsService {
 
     // 2. Find target user
     const targetUser = await this.AuthRepo.findOne({
-      $or: [{ email: emailOrUsername }, { username: emailOrUsername }]
+      $or: [
+        { email: emailOrUsername.toLocaleLowerCase() },
+        { username: emailOrUsername }
+      ]
     }).exec();
 
     if (!targetUser || !targetUser.is_email_verified) {
@@ -144,6 +155,24 @@ export class ProjectsService {
     await project.save();
 
     return { projectName: project.name, user: user._id };
+  }
+
+  async removeCollaborator(ownerId: string, projectId: string, collaboratorId: string) {
+    const project = await this.ProjectsRepo.findById(projectId).exec();
+    if (!project) throw new NotFoundException('Project not found');
+
+    if (project.owner.toString() !== ownerId) {
+      throw new ForbiddenException('Only the owner can remove collaborators');
+    }
+
+    if (!project.collobrators?.includes(collaboratorId)) {
+      throw new BadRequestException('User is not a collaborator in this project');
+    }
+
+    project.collobrators = project.collobrators.filter(id => id !== collaboratorId);
+    await project.save();
+
+    return { success: true, message: 'Collaborator removed successfully' };
   }
 
   async tokenChecker(client: Socket) {

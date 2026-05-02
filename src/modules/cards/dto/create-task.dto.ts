@@ -1,9 +1,18 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString, Matches } from "class-validator";
 
-export class CreateCardDto {
+export class CreateTaskDto {
     @IsNotEmpty()
     @IsString()
-    title!: string;
+    name!: string;
+
+    @IsOptional()
+    @IsString()
+    description?: string;
+
+    @IsNotEmpty()
+    @IsString()
+    @Matches(/^[0-9a-fA-F]{24}$/, { message: 'Invalid card ID format' })
+    cardId!: string;
 
     @IsNotEmpty()
     @IsString()

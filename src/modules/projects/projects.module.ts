@@ -6,6 +6,8 @@ import { Project, ProjectSchema } from './entities/project.entity';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { MailModule } from '../nodeMailer/mailer.module';
 import { Auth, AuthSchema } from '../auth/schema/auth.schema';
+import { Card, CardSchema } from '../cards/entities/card.entity';
+import { Task, TaskSchema } from '../cards/entities/task.entity';
 import * as dotenv from 'dotenv'
 import { ProjectsController } from './projects.controller';
 dotenv.config()
@@ -14,7 +16,9 @@ dotenv.config()
   imports: [
     MongooseModule.forFeature([
       { name: Project.name, schema: ProjectSchema },
-      { name: Auth.name, schema: AuthSchema }
+      { name: Auth.name, schema: AuthSchema },
+      { name: Card.name, schema: CardSchema },
+      { name: Task.name, schema: TaskSchema }
     ]),
     MailModule
   ],
