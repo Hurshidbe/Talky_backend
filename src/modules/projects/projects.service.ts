@@ -23,19 +23,29 @@ export class ProjectsService {
   ) { }
 
   async create(owner: string, createProjectDto: CreateProjectDto) {
-    const created = await this.ProjectsRepo.create(
-      {
-        name: createProjectDto.name,
-        description: createProjectDto.description,
-        owner,
-        collobrators: createProjectDto.collobrators || []
-      }
-    )
-    return created
+    const created = await this.ProjectsRepo.create({
+      name: createProjectDto.name,
+      description: createProjectDto.description,
+      project_icon: createProjectDto.project_icon,
+      owner: new Types.ObjectId(owner),
+      collobrators: createProjectDto.collobrators || []
+    });
+    return created;
   }
 
-  async findAll(owner: string) {
-    return this.ProjectsRepo.find({ owner }).exec();
+  async findAll(userId: string) {
+    const userObjectId = new Types.ObjectId(userId);
+    return this.ProjectsRepo.find({
+      $or: [
+        { owner: userId },
+        { owner: userObjectId as any },
+        { collobrators: userId },
+        { collobrators: userObjectId as any }
+      ]
+    })
+    .populate('owner', 'firstname lastname avatar')
+    .populate('collobrators', 'firstname lastname avatar')
+    .exec();
   }
 
   async findOne(id: string, userId: string) {
@@ -177,10 +187,7 @@ export class ProjectsService {
 
   async tokenChecker(client: Socket) {
     try {
-      // Socket.io handshake'dan tokenni olamiz
-      const token = client.handshake.headers.authorization;
-      // const token = authHeader ? authHeader.split(' ')[1] : client.handshake.auth?.token;
-
+      const token = client.handshake.auth?.token || client.handshake.headers.authorization;
       if (!token) throw new Error('token not found');
 
       const payload = await this.jwt.verifyAsync(token, { secret: process.env.JWT_SECRET });

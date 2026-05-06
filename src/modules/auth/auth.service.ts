@@ -33,13 +33,14 @@ export class AuthService {
 
     async register(dto : RegisterDto){
           if(dto.password!==dto.return_password) throw new BadRequestException('passwords does not match')
-          if((await this.AuthRepo.findOne({email : dto.email})))throw new BadRequestException('email already registered')
+          const email = dto.email.toLowerCase().trim();
+          if((await this.AuthRepo.findOne({ email }))) throw new BadRequestException('email already registered')
             const hashed_pass = await bcrypt.hash(dto.password,12)
             const user = await this.AuthRepo.create(
                 {
-                    email : dto.email,
+                    email : email,
                     password : hashed_pass,
-                    firstname : dto.email.split('@')[0]
+                    firstname : email.split('@')[0]
                 }
             )
         return {
@@ -51,7 +52,7 @@ export class AuthService {
     async registerOrLoginWithGoogle(data: Profile) {
         const user = {
             google_id: data.id,
-            email: data.emails?.[0]?.value,
+            email: data.emails?.[0]?.value.toLowerCase().trim(),
             name: data.name?.givenName,
             avatar: data.photos?.[0]?.value
         };
@@ -88,7 +89,8 @@ export class AuthService {
         if (attemps >= 5) {
             throw new UnauthorizedException('Too many attemps, try again after 2 minutes');
         }
-        const user = await this.AuthRepo.findOne({ email: dto.email });
+        const email = dto.email.toLowerCase().trim();
+        const user = await this.AuthRepo.findOne({ email });
         const pass_match = user? await bcrypt.compare(dto.password, user.password as string) : false;
         if (!user || !pass_match) {
             await this.CacheManager.set(key, attemps + 1, 120000);
@@ -157,7 +159,7 @@ export class AuthService {
     }
 
     async generateTokens(userId : Types.ObjectId){
-        const access_token = this.jwt.sign({userId})
+        const access_token = this.jwt.sign({ userId: userId.toString() })
         const refresh_token = uuid()
         await this.storeRefreshToken(refresh_token, userId)
         return {access_token, refresh_token}

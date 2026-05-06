@@ -238,18 +238,22 @@ export class CardsService {
   }
 
   async getBoard(userId: string, projectId: string) {
-    const project = await this.ProjectRepo.findById(projectId).exec();
+    const project = await this.ProjectRepo.findById(projectId)
+      .populate('owner', 'firstname lastname email avatar')
+      .populate('collobrators', 'firstname lastname email avatar')
+      .exec();
+
     if (!project) throw new NotFoundException('Project not found');
 
-    const isOwner = project.owner.toString() === userId;
-    const isCollaborator = project.collobrators?.includes(userId);
+    const isOwner = project.owner['_id'].toString() === userId;
+    const isCollaborator = project.collobrators?.some(c => c['_id'].toString() === userId);
+    
     if (!isOwner && !isCollaborator) {
       throw new ForbiddenException('You do not have access to this project');
     }
 
     const cards = await this.CardRepo.find({ projectId: new Types.ObjectId(projectId) }).sort({ order: 1 }).exec();
 
-    // Fetch tasks. If owner, include history.
     const tasksQuery = this.TaskRepo.find({ projectId: new Types.ObjectId(projectId) }).sort({ order: 1 });
     if (isOwner) {
       tasksQuery.select('+history');
@@ -257,6 +261,7 @@ export class CardsService {
     const tasks = await tasksQuery.exec();
 
     return {
+      project,
       cards,
       tasks
     };
@@ -264,7 +269,7 @@ export class CardsService {
 
   async tokenChecker(client: Socket) {
     try {
-      const token = client.handshake.headers.authorization;
+      const token = client.handshake.auth?.token || client.handshake.headers.authorization;
       if (!token) throw new Error('token not found');
 
       const payload = await this.jwt.verifyAsync(token, { secret: process.env.JWT_SECRET });

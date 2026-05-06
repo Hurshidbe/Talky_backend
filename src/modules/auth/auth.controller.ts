@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpException, Logger, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpException, Logger, Param, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { refreshTwoTokents, RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -38,11 +38,17 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(PassportAuthGuard('google'))
-  async callback(@Req() req : Request){
+  async callback(@Req() req : Request, @Res() res: any){
     try {
-    const data = req.user as Profile
-    return await this.authService.registerOrLoginWithGoogle(data)
+      const data = req.user as Profile
+      console.log("--- DEBUG: Google Profile Email ---", data.emails?.[0]?.value);
+      const tokens = await this.authService.registerOrLoginWithGoogle(data)
+      console.log("--- DEBUG: Google Login Success ---");
+      
+      // Frontendga yo'naltirish (3001-port)
+      return res.redirect(`http://localhost:3001/auth-callback?token=${tokens.access_token}&refresh_token=${tokens.refresh_token}`)
     } catch (error) {
+      console.error("--- DEBUG: Google Login Error ---", error.message);
       throw new HttpException(error.message , error.status??500)
     }
   }

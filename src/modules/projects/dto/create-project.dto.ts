@@ -3,13 +3,18 @@ import { IsArray, IsNotEmpty, IsOptional, IsString, Length } from "class-validat
 export class CreateProjectDto {
     @IsNotEmpty()
     @IsString()
-    @Length(1,500)
-    name! : string
+    @Length(1, 500)
+    name!: string
 
     @IsOptional()
     @IsString()
-    @Length(0,5000)
-    description? :string
+    @Length(0, 200)
+    project_icon?: string
+
+    @IsOptional()
+    @IsString()
+    @Length(0, 5000)
+    description?: string
 
     @IsOptional()
     @IsArray()
